@@ -1,4 +1,3 @@
-/* src/App.css */
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
@@ -82,7 +81,6 @@ p {
     text-align: center;
 }
 
-/* Для центрирования всей структуры */
 #root {
     width: 100%;
     display: flex;
@@ -90,7 +88,6 @@ p {
     align-items: center;
 }
 
-/* Обновленный App компонент для центрирования */
 .app-content {
     width: 100%;
     display: flex;

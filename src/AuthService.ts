@@ -6,8 +6,21 @@ class AuthService {
     private currentUser: User | null = null;
 
     public async getUser(): Promise<User | null> {
-        if (this.currentUser) return this.currentUser;
-        this.currentUser = await this.userManager.getUser();
+        if (this.currentUser && !this.currentUser.expired) {
+            return this.currentUser;
+        }
+
+        const user = await this.userManager.getUser();
+
+        if (!user || user.expired) {
+            this.currentUser = null;
+            if (user?.expired) {
+                await this.userManager.removeUser();
+            }
+            return null;
+        }
+
+        this.currentUser = user;
         return this.currentUser;
     }
 
@@ -16,6 +29,8 @@ class AuthService {
     }
 
     public async signOut(): Promise<void> {
+        this.currentUser = null;
+        await this.userManager.removeUser();
         await this.userManager.signoutRedirect();
     }
 
