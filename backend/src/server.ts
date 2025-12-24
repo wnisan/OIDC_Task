@@ -9,9 +9,12 @@ const app = express();
 
 const PORT = Number(process.env.PORT) || 3000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? 'http://localhost:5173';
-const AUTH_AUDIENCE = process.env.AUTH_AUDIENCE ?? 'aje27so1a2ijsc18b80t';
+// Для Google в качестве audience используется client_id
+const AUTH_AUDIENCE =
+    process.env.AUTH_AUDIENCE ??
+    '200783178468-gp5ael3ruc8b2qrgkkfr348oovqno48q.apps.googleusercontent.com';
 const AUTH_ISSUER_BASE_URL =
-    process.env.AUTH_ISSUER_BASE_URL ?? 'https://auth.cloud.yandex.ru';
+    process.env.AUTH_ISSUER_BASE_URL ?? 'https://accounts.google.com';
 
 app.use(cors({ origin: CLIENT_ORIGIN }));
 

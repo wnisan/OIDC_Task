@@ -1,58 +1,41 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { User } from 'oidc-client-ts';
-
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
+import { authService } from '../AuthService';
 
 interface ProfileProps {
   user: User;
+  onUserUpdate?: (user: User | null) => void;
 }
 
-const Profile = ({ user }: ProfileProps) => {
-  const [apiMessage, setApiMessage] = useState('');
+const Profile = ({ user: initialUser, onUserUpdate }: ProfileProps) => {
+  const [user, setUser] = useState<User>(initialUser);
 
-  const fetchProtectedData = async () => {
-    const token = user?.access_token;
-    if (!token) {
-      setApiMessage('Токен доступа отсутствует.');
-      return;
-    }
+  // Обновляем локальное состояние пользователя при изменении
+  useEffect(() => {
+    setUser(initialUser);
+  }, [initialUser]);
 
-    try {
-      const response = await fetch(`${apiBaseUrl}/protected`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          setApiMessage('Доступ запрещён: токен невалиден или истёк.');
-          return;
+  // Автоматически обновляем токен, если он истёк
+  useEffect(() => {
+    const checkAndRefreshToken = async () => {
+      const refreshedUser = await authService.refreshTokenIfNeeded();
+      if (refreshedUser && refreshedUser.access_token !== initialUser.access_token) {
+        setUser(refreshedUser);
+        if (onUserUpdate) {
+          onUserUpdate(refreshedUser);
         }
-        throw new Error(`Ошибка сети или сервера: ${response.statusText}`);
       }
+    };
 
-      const data = await response.json();
-      setApiMessage(data.message);
-    } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
-        setApiMessage(`Ошибка при вызове API: ${error.message}`);
-      } else {
-        setApiMessage('Произошла неизвестная ошибка.');
-      }
-    }
-  };
+    checkAndRefreshToken();
+  }, [initialUser, onUserUpdate]);
 
   return (
     <div className="container">
       <h2>Привет, {user.profile.name || user.profile.sub}!</h2>
-      <button onClick={fetchProtectedData}>Вызвать защищенный API</button>
-      {apiMessage && <p>Ответ API: {apiMessage}</p>}
+      <p>Email: {user.profile.email || 'Не указан'}</p>
     </div>
   );
 };
 
 export default Profile;
-
-

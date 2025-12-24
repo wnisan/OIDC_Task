@@ -46,7 +46,12 @@ function App() {
             path="/profile"
             element={
               <ProtectedRoute user={user}>
-                {user && <Profile user={user} />}
+                {user && (
+                  <Profile
+                    user={user}
+                    onUserUpdate={(updatedUser) => setUser(updatedUser)}
+                  />
+                )}
               </ProtectedRoute>
             }
           />
